@@ -14,17 +14,15 @@
 //     */
 package cmd
 
-// generate a test for version, and test the version command is rhino version
+import "testing"
 
-// func TestVersionCommand(t *testing.T) {
-// 	cmd := NewVersionCommand()
-// 	buf := new(bytes.Buffer)
-// 	cmd.SetOut(buf)
-// 	err := cmd.Execute()
-
-// 	assert.NoError(t, err)
-
-//		output := buf.String()
-//		expected := "OpenRHINO v0.2.0\nOpen MPI v4.1.5"
-//		assert.Contains(t, output, expected, "expected output to contain %q, but got %q", expected, output)
-//	}
+// generate a test for version, and test the version command is rhino version，output is OpenRHINOJob v1alpha1\nKubernetes v1.25.4
+func TestVersion(t *testing.T) {
+	out, err := execShellCmd("rhino", []string{"version"})
+	if err != nil {
+		t.Errorf("execShellCmd error: %v", err)
+	}
+	if out != "OpenRHINOJob v1alpha1\nKubernetes v1.25.4\n" {
+		t.Errorf("execShellCmd error: %v", err)
+	}
+}

@@ -26,11 +26,7 @@ import (
 	"k8s.io/client-go/util/homedir"
 )
 
-// rhinoVersion is the version of Rhino
-// var (
-// 	rhinoVersion string = "v0.2.0"
-// )
-
+// printKubernetesVersion prints the version of Kubernetes installed on the local machine
 func printKubernetesVersion() (string, error) {
 	// Load the Kubernetes configuration from file
 	var kubeconfig string
@@ -59,6 +55,7 @@ func printKubernetesVersion() (string, error) {
 	return version.String(), nil
 }
 
+// printRhinojobVersion prints the version of Rhino installed on the local machine
 func printRhinojobVersion() (string, error) {
 	rhinojobVersion := rhinojob.GroupVersion.Version
 	if len(rhinojobVersion) == 0 {
@@ -67,40 +64,12 @@ func printRhinojobVersion() (string, error) {
 	return rhinojob.GroupVersion.Version, nil
 }
 
-// printMpiVersion prints the version of MPI installed on the local machine
-// func printMpiVersion() (string, error) {
-// 	var output []byte
-// 	var err error
-// 	var versions []string
-// 	if _, err = exec.LookPath("ompi_info"); err == nil {
-// 		output, err = exec.Command("ompi_info", "--version").Output()
-// 		if err == nil {
-// 			versions = append(versions, strings.Split(string(output), "\n")[0])
-// 		}
-// 	}
-// 	if _, err = exec.LookPath("mpichversion"); err == nil {
-// 		output, err = exec.Command("mpichversion").Output()
-// 		if err == nil {
-// 			versions = append(versions, strings.Split(string(output), "\n")[0])
-// 		}
-// 	}
-// 	if len(versions) == 0 {
-// 		return "", fmt.Errorf("neither openmpi nor mpich found")
-// 	}
-// 	return strings.Join(versions, "\n"), nil
-// }
-
 // NewVersionCommand creates a new version command
 func NewVersionCommand() *cobra.Command {
 	versionCmd := &cobra.Command{
 		Use:   "version ",
 		Short: "Print the version of Rhino and MPI installed on the local machine",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// mpiVersion, err := printMpiVersion()
-			// if err != nil {
-			// 	return err
-			// }
-			// fmt.Printf("OpenRHINO %s\n%s\n", rhinoVersion, mpiVersion)
 			rhinojobVersion, err := printRhinojobVersion()
 			if err != nil {
 				return err
