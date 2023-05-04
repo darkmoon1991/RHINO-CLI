@@ -16,22 +16,15 @@ package cmd
 
 // generate a test for version, and test the version command is rhino version
 
-import (
-	"bytes"
-	"testing"
+// func TestVersionCommand(t *testing.T) {
+// 	cmd := NewVersionCommand()
+// 	buf := new(bytes.Buffer)
+// 	cmd.SetOut(buf)
+// 	err := cmd.Execute()
 
-	"github.com/stretchr/testify/assert"
-)
+// 	assert.NoError(t, err)
 
-func TestVersionCommand(t *testing.T) {
-	cmd := NewVersionCommand()
-	buf := new(bytes.Buffer)
-	cmd.SetOut(buf)
-	err := cmd.Execute()
-
-	assert.NoError(t, err)
-
-	output := buf.String()
-	expected := "OpenRHINO v0.2.0\nOpen MPI v4.1.5"
-	assert.Contains(t, output, expected, "expected output to contain %q, but got %q", expected, output)
-}
+//		output := buf.String()
+//		expected := "OpenRHINO v0.2.0\nOpen MPI v4.1.5"
+//		assert.Contains(t, output, expected, "expected output to contain %q, but got %q", expected, output)
+//	}

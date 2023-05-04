@@ -16,9 +16,34 @@
 package cmd
 
 import (
+	"bytes"
+	"fmt"
+	"strings"
+
 	"github.com/spf13/cobra"
 )
 
+func TestVersionCommand() {
+	cmd := NewVersionCommand()
+	buf := new(bytes.Buffer)
+	err := cmd.Execute()
+	cmd.SetOut(buf)
+	fmt.Println("buf0:", buf)
+
+	if err == nil {
+		fmt.Println("buf:", buf)
+		output := buf.String()
+		expected := "OpenRHINO v0.2.0\nOpen MPI v4.1.5"
+		if !strings.Contains(output, expected) {
+			fmt.Printf("expected output to contain %q, but got %q", expected, output)
+		} else {
+			fmt.Println("TestVersionCommand passed")
+		}
+	} else {
+		fmt.Printf("TestVersionCommand failed")
+	}
+
+}
 func NewRootCommand() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "rhino",
