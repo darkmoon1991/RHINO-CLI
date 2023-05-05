@@ -16,72 +16,114 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 
-	rhinojob "github.com/OpenRHINO/RHINO-Operator/api/v1alpha1"
 	"github.com/spf13/cobra"
+	apiextv1 "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 )
 
-// printKubernetesVersion prints the version of Kubernetes installed on the local machine
-func printKubernetesVersion() (string, error) {
-	// Load the Kubernetes configuration from file
-	var kubeconfig string
-	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = filepath.Join(home, ".kube", "config")
-	} else {
-		return "", fmt.Errorf("kubeconfig file not found, please use --config to specify the absolute path")
-	}
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-	if err != nil {
-		panic(err)
-	}
+type VersionOptions struct {
+	kubeconfig string
+}
 
+var RhinoClientVersion = "v0.2.0"
+var RhinocrdName = "rhinojobs.openrhino.org"
+
+// NewVersionCommand creates a new version command
+func NewVersionCommand() *cobra.Command {
+	versionOptions := &VersionOptions{}
+	versionCmd := &cobra.Command{
+		Use:   "version ",
+		Short: "Print the version of Rhino and kubernetes installed on the local machine,and the version of serverRhino ",
+		RunE:  versionOptions.RunVersionCommand,
+	}
+	versionCmd.Flags().StringVar(&versionOptions.kubeconfig, "kubeconfig", "", "the path of the kubeconfig file")
+
+	return versionCmd
+}
+
+// getKubernetesVersion returns the version of Kubernetes installed on the local machine
+func (v *VersionOptions) getKubernetesVersion() (string, error) {
+
+	//build kubeconfig
+	config, err := clientcmd.BuildConfigFromFlags("", v.kubeconfig)
+	if err != nil {
+		return "", fmt.Errorf("error building kubeconfig: %s", err.Error())
+	}
 	// Create a Kubernetes clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err)
+		return "", fmt.Errorf("error creating clientset: %s", err.Error())
+	}
+	// Create a Kubernetes clientset
+	if err != nil {
+		return "", err
 	}
 
 	// Get the Kubernetes server version
 	version, err := clientset.Discovery().ServerVersion()
 	if err != nil {
-		panic(err)
+		fmt.Println("Error getting server version:", err.Error())
+		return "", err
 	}
 	// Print the version information
 	return version.String(), nil
 }
 
-// printRhinojobVersion prints the version of Rhino installed on the local machine
-func printRhinojobVersion() (string, error) {
-	rhinojobVersion := rhinojob.GroupVersion.Version
-	if len(rhinojobVersion) == 0 {
-		return "", fmt.Errorf("neither openmpi nor mpich found")
+// getRhinoServerVersion prints the version of Server Rhino
+func (v *VersionOptions) getRhinoServerVersion() (string, error) {
+
+	//build kubeconfig
+	config, err := clientcmd.BuildConfigFromFlags("", v.kubeconfig)
+	if err != nil {
+		return "", fmt.Errorf("error building kubeconfig: %s", err.Error())
 	}
-	return rhinojob.GroupVersion.Version, nil
+
+	// 创建 API Extension 客户端
+	apiExtClient, err := apiextv1.NewForConfig(config)
+	if err != nil {
+		return "", fmt.Errorf("error creating apiExtClient: %s", err.Error())
+	}
+	// 获取指定 CRD 的 Group 和 Version
+	crd, err := apiExtClient.CustomResourceDefinitions().Get(context.TODO(), RhinocrdName, metav1.GetOptions{})
+	if err != nil {
+		return "", fmt.Errorf("error getting crd: %s", err.Error())
+	}
+	version := crd.Spec.Versions[0].Name
+	return version, nil
 }
 
-// NewVersionCommand creates a new version command
-func NewVersionCommand() *cobra.Command {
-	versionCmd := &cobra.Command{
-		Use:   "version ",
-		Short: "Print the version of Rhino and MPI installed on the local machine",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			rhinojobVersion, err := printRhinojobVersion()
-			if err != nil {
-				return err
-			}
-			fmt.Printf("OpenRHINOJob %s\n", rhinojobVersion)
-			k8sVersion, err := printKubernetesVersion()
-			if err != nil {
-				return err
-			}
-			fmt.Printf("Kubernetes %s\n", k8sVersion)
-			return nil
-		},
+// RunVersionCommand runs the version command
+func (v *VersionOptions) RunVersionCommand(cmd *cobra.Command, args []string) error {
+	if v.kubeconfig == "" {
+		if home := homedir.HomeDir(); home != "" {
+			v.kubeconfig = filepath.Join(home, ".kube", "config")
+		} else {
+			return fmt.Errorf("kubeconfig file not found, please use --config to specify the absolute path")
+		}
 	}
-	return versionCmd
+
+	// Print the version of Kubernetes
+	kubernetesVersion, err := v.getKubernetesVersion()
+	if err != nil {
+		return err
+	}
+	fmt.Println("Kubernetes version:", kubernetesVersion)
+
+	// Print the version of RhinoServer
+	rhinoServerVersion, err := v.getRhinoServerVersion()
+	if err != nil {
+		return err
+	}
+	fmt.Println("RhinoServer version:", rhinoServerVersion)
+
+	// Print the version of RhinoClient
+	fmt.Println("RhinoClient version:", RhinoClientVersion)
+	return nil
 }

@@ -14,15 +14,21 @@
 //     */
 package cmd
 
-import "testing"
+import (
+	"testing"
 
-// generate a test for version, and test the version command is rhino version，output is OpenRHINOJob v1alpha1\nKubernetes v1.25.4
+	"github.com/stretchr/testify/assert"
+)
+
 func TestVersion(t *testing.T) {
-	out, err := execShellCmd("rhino", []string{"version"})
-	if err != nil {
-		t.Errorf("execShellCmd error: %v", err)
-	}
-	if out != "OpenRHINOJob v1alpha1\nKubernetes v1.25.4\n" {
-		t.Errorf("execShellCmd error: %v", err)
-	}
+	cmdOutput, err := execShellCmd("rhino", []string{"version"})
+	assert.Equal(t, nil, err, "test run failed: %s", errorMessage(err))
+	// Check that the output is contained "kubenetes version"&&"RhinoServer version"&&"RhinoClient version"
+	assert.Contains(t, cmdOutput, "Kubernetes version")
+	assert.Contains(t, cmdOutput, "RhinoServer version")
+	assert.Contains(t, cmdOutput, "RhinoClient version")
+	//if the kubeconfig is not exist or error path, the output should be "error building kubeconfig"
+	cmdOutput1, err1 := execShellCmd("rhino", []string{"version", "--kubeconfig", "/home/zhao/.kube/config"})
+	assert.Error(t, err1, "test run failed: %s", errorMessage(err1))
+	assert.Contains(t, cmdOutput1, "error building kubeconfig")
 }
