@@ -61,11 +61,6 @@ func (v *VersionOptions) getKubernetesVersion() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error creating clientset: %s", err.Error())
 	}
-	// Create a Kubernetes clientset
-	if err != nil {
-		return "", err
-	}
-
 	// Get the Kubernetes server version
 	version, err := clientset.Discovery().ServerVersion()
 	if err != nil {
