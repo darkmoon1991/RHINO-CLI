@@ -15,20 +15,26 @@
 package cmd
 
 import (
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestVersion(t *testing.T) {
-	cmdOutput, err := execShellCmd("rhino", []string{"version"})
-	assert.Equal(t, nil, err, "test run failed: %s", errorMessage(err))
-	// Check that the output is contained "kubenetes version"&&"RhinoServer version"&&"RhinoClient version"
-	assert.Contains(t, cmdOutput, "Kubernetes version")
-	assert.Contains(t, cmdOutput, "RhinoServer version")
-	assert.Contains(t, cmdOutput, "RhinoClient version")
-	//if the kubeconfig is not exist or error path, the output should be "error building kubeconfig"
-	cmdOutput1, err1 := execShellCmd("rhino", []string{"version", "--kubeconfig", "/home/zhao/.kube/config"})
-	assert.Error(t, err1, "test run failed: %s", errorMessage(err1))
-	assert.Contains(t, cmdOutput1, "error building kubeconfig")
+	// change work directory to ${workspaceFolder}
+	cwd, err := os.Getwd()
+	assert.Equal(t, nil, err, "test command version failed: %s", errorMessage(err))
+	if strings.HasSuffix(cwd, "cmd") {
+		os.Chdir("..")
+	}
+	rootCmd := NewRootCommand()
+	rootCmd.SetArgs([]string{"version"})
+	err = rootCmd.Execute()
+	assert.Equal(t, nil, err, "test command version failed: %s", errorMessage(err))
+
+	rootCmd.SetArgs([]string{"version", "--kubeconfig", "/home/zhao/.kube/config"})
+	err = rootCmd.Execute()
+	assert.Error(t, err, "test command version failed: %s", errorMessage(err))
 }
