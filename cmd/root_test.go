@@ -18,9 +18,9 @@ package cmd_test
 import (
 	"testing"
 
+	"github.com/OpenRHINO/RHINO-CLI/cmd"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
-	"github.com/OpenRHINO/RHINO-CLI/cmd"
 )
 
 func TestNewRootCommand(t *testing.T) {
@@ -31,7 +31,7 @@ func TestNewRootCommand(t *testing.T) {
 	assert.Equal(t, "\nRHINO-CLI - Manage your OpenRHINO functions and jobs", rootCmd.Short)
 
 	// Test if rootCmd has the correct subcommands
-	expectedSubcommands := []string{"create", "build", "delete", "run", "list", "docker-run"}
+	expectedSubcommands := []string{"create", "build", "delete", "run", "list", "docker-run", "version"}
 	actualSubcommands := getSubcommandNames(rootCmd)
 
 	assert.Equal(t, len(expectedSubcommands), len(actualSubcommands), "Number of subcommands should be equal")

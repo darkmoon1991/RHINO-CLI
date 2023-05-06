@@ -31,6 +31,6 @@ func NewRootCommand() *cobra.Command {
 	rootCmd.AddCommand(NewRunCommand())
 	rootCmd.AddCommand(NewListCommand())
 	rootCmd.AddCommand(NewDockerRunCommand())
-
+	rootCmd.AddCommand(NewVersionCommand())
 	return rootCmd
 }
