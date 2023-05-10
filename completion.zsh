@@ -21,7 +21,7 @@ case $option in
     # 删除自动补全脚本目录
     rm -rf "$completion_dir"
     # 删除自动补全脚本目录配置
-    sed -i '' -e "/fpath=(~\/.zsh_completion.d \$fpath)/d" ~/.zshrc
+    sed -i '' -e '/\.zsh_completion\.d/d' ~/.zshrc
     sed -i '' -e "/autoload -U compinit/d" ~/.zshrc
 
     ;;
