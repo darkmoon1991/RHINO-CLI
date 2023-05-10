@@ -34,12 +34,13 @@ type CreateOptions struct {
 func NewCreateCommand() *cobra.Command {
 	createOpts := &CreateOptions{}
 	createCmd := &cobra.Command{
-		Use:     "create",
-		Short:   "Create a new MPI function/project",
-		Long:    "\nCreate a new MPI function/project",
-		Example: `  C++ function: rhino create func_name -l cpp`,
-		Args:    createOpts.argsCheck,
-		RunE:    createOpts.runCreate,
+		Use:       "create",
+		Short:     "Create a new MPI function/project",
+		Long:      "\nCreate a new MPI function/project",
+		Example:   `  C++ function: rhino create func_name -l cpp`,
+		Args:      createOpts.argsCheck,
+		RunE:      createOpts.runCreate,
+		ValidArgs: []string{"lang"},
 	}
 	createCmd.Flags().StringVarP(&createOpts.language, "lang", "l", "cpp", "language template to use")
 	return createCmd

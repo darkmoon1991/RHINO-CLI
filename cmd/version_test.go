@@ -15,23 +15,16 @@
 package cmd
 
 import (
-	"os"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestVersion(t *testing.T) {
-	// change work directory to ${workspaceFolder}
-	cwd, err := os.Getwd()
-	assert.Equal(t, nil, err, "test command version failed: %s", errorMessage(err))
-	if strings.HasSuffix(cwd, "cmd") {
-		os.Chdir("..")
-	}
+
 	rootCmd := NewRootCommand()
 	rootCmd.SetArgs([]string{"version"})
-	err = rootCmd.Execute()
+	err := rootCmd.Execute()
 	assert.Equal(t, nil, err, "test command version failed: %s", errorMessage(err))
 
 	rootCmd.SetArgs([]string{"version", "--kubeconfig", "/home/zhao/.kube/config"})

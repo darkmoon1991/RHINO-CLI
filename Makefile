@@ -1,3 +1,5 @@
+TERMINAL ?= bash
+
 .PHONY: build
 build: generate
 	go build -o rhino .
@@ -15,3 +17,5 @@ install: generate
 clean:
 	rm /usr/local/bin/rhino
 	rm rhino
+
+

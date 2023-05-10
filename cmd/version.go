@@ -41,9 +41,10 @@ const RHINOCRDNAME = "rhinojobs.openrhino.org"
 func NewVersionCommand() *cobra.Command {
 	versionOptions := &VersionOptions{}
 	versionCmd := &cobra.Command{
-		Use:   "version",
-		Short: "Print the version of Rhino and kubernetes installed on the local machine,and the version of serverRhino ",
-		RunE:  versionOptions.RunVersionCommand,
+		Use:       "version",
+		Short:     "Print the version of RhinoClient and kubernetes installed on the local machine,and the version of RhinoServer ",
+		RunE:      versionOptions.RunVersionCommand,
+		ValidArgs: []string{"kubeconfig"},
 	}
 	versionCmd.Flags().StringVar(&versionOptions.kubeconfig, "kubeconfig", "", "the path of the kubeconfig file")
 

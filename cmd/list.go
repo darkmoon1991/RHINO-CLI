@@ -43,7 +43,8 @@ func NewListCommand() *cobra.Command {
 		Long:  "\nList all the RHINO jobs in your current namespace or the namespace specified",
 		Example: `  rhino list
   rhino list --namespace user_func`,
-		RunE: listOpts.list,
+		RunE:      listOpts.list,
+		ValidArgs: []string{"namespace", "kubeconfig"},
 	}
 
 	listCmd.Flags().StringVarP(&listOpts.namespace, "namespace", "n", "", "the namespace to list RHINO jobs")
