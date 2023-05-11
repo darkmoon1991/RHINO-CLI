@@ -18,11 +18,8 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
-	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -104,20 +101,11 @@ func (v *VersionOptions) getRhinoServerVersion() (string, error) {
 
 // RunVersionCommand runs the version command
 func (v *VersionOptions) RunVersionCommand(cmd *cobra.Command, args []string) error {
-	if v.kubeconfig == "" {
-		homeDir, err := homedir.Dir()
-		if err != nil {
-			return fmt.Errorf("could not get home directory: %s,please use --kubeconfig to specify the absolute path", err)
-		}
-		kubeconfigPath := filepath.Join(homeDir, ".kube", "config")
-		_, err = os.Stat(kubeconfigPath)
-		if err != nil {
-			if os.IsNotExist(err) {
-				return fmt.Errorf("kubeconfig file not found at %s, please use --kubeconfig to specify the absolute path", kubeconfigPath)
-			}
-			return fmt.Errorf("error checking kubeconfig file at %s: %s", kubeconfigPath, err)
-		}
-		v.kubeconfig = kubeconfigPath
+	// Get the kubeconfig file
+	var err error
+	v.kubeconfig, err = getKubeconfigPath(v.kubeconfig)
+	if err != nil {
+		return fmt.Errorf("%v, please set the kubeconfig path by --kubeconfig", err)
 	}
 
 	// Print the version of Kubernetes

@@ -20,14 +20,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"text/tabwriter"
 
 	rhinojob "github.com/OpenRHINO/RHINO-Operator/api/v1alpha1"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/util/homedir"
 )
 
 type ListOptions struct {
@@ -60,12 +58,10 @@ func (l *ListOptions) list(cmd *cobra.Command, args []string) error {
 	}
 
 	// Get the kubeconfig file
-	if len(l.kubeconfig) == 0 {
-		if home := homedir.HomeDir(); home != "" {
-			l.kubeconfig = filepath.Join(home, ".kube", "config")
-		} else {
-			return fmt.Errorf("kubeconfig file not found, please use --config to specify the absolute path")
-		}
+	var err error
+	l.kubeconfig, err = getKubeconfigPath(l.kubeconfig)
+	if err != nil {
+		return fmt.Errorf("%v, please set the kubeconfig path by --kubeconfig", err)
 	}
 
 	// Build the dynamic client
