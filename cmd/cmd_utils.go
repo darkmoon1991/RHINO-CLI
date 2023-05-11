@@ -39,7 +39,9 @@ var RhinoJobGVR = schema.GroupVersionResource{Group: "openrhino.org", Version: "
 
 func getKubeconfigPath(kubeconfig string) (string, error) {
 	if kubeconfig == "" {
-		if home := homedir.HomeDir(); home != "" {
+		if home := homedir.HomeDir(); home == "" {
+			return "", fmt.Errorf("home directory not found")
+		} else {
 			kubeconfig = filepath.Join(home, ".kube", "config")
 			// Check if the file exists.
 			if _, err := os.Stat(kubeconfig); os.IsNotExist(err) {
@@ -48,8 +50,6 @@ func getKubeconfigPath(kubeconfig string) (string, error) {
 				// Some other error occurred when checking if the file exists.
 				return "", fmt.Errorf("error checking kubeconfig file: %v", err)
 			}
-		} else { // home == ""
-			return "", fmt.Errorf("home directory not found")
 		}
 	}
 	return kubeconfig, nil
