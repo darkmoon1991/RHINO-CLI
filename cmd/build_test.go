@@ -82,7 +82,7 @@ func TestBuildSingleFileCpp(t *testing.T) {
 
 		// Remove the test image.
 		execShellCmd("docker", []string{"rmi", testFuncImageName})
-		execShellCmd("docker", []string{"rmi", "-f", "$(docker images | grep none | awk '{print $3}')"})
+		execShellCmd("sh", []string{"-c", "docker rmi -f $(docker images | grep none | grep second | awk '{print $3}')"})
 	}()
 
 }

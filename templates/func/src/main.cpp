@@ -27,7 +27,6 @@ int main(int argc, char *argv[])
     MPI_CHECK(MPI_Comm_rank(MPI_COMM_WORLD, &world_rank));
     MPI_CHECK(MPI_Get_processor_name(processor_name, &name_len));
 
-    
 	/*
 	 * YOUR CODE HERE
 	 */

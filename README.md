@@ -23,7 +23,7 @@ RHINO-CLI provides the following commands:
 - `delete`: Delete a RHINO job
 - `help`: Help about any command
 - `completion`: Generate the autocompletion script for the specified shell
-- `version`:Print the version of RhinoClient and kubernetes installed on the local machine,and the version of RhinoServer
+- `version`: Print the version of RhinoClient and kubernetes installed on the local machine, and the version of RhinoServer
 
 
 To get more information about a specific command, use the following command:

@@ -15,5 +15,3 @@ install: generate
 clean:
 	rm /usr/local/bin/rhino
 	rm rhino
-
-
