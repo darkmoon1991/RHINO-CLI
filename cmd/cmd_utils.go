@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -31,9 +32,28 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 )
 
 var RhinoJobGVR = schema.GroupVersionResource{Group: "openrhino.org", Version: "v1alpha1", Resource: "rhinojobs"}
+
+func getKubeconfigPath(kubeconfig string) (string, error) {
+	if kubeconfig == "" {
+		if home := homedir.HomeDir(); home == "" {
+			return "", fmt.Errorf("home directory not found")
+		} else {
+			kubeconfig = filepath.Join(home, ".kube", "config")
+			// Check if the file exists.
+			if _, err := os.Stat(kubeconfig); os.IsNotExist(err) {
+				return "", fmt.Errorf("kubeconfig file not found in home directory")
+			} else if err != nil {
+				// Some other error occurred when checking if the file exists.
+				return "", fmt.Errorf("error checking kubeconfig file: %v", err)
+			}
+		}
+	}
+	return kubeconfig, nil
+}
 
 func buildFromKubeconfig(configPath string) (dynamicClient *dynamic.DynamicClient, currentNamespace *string, err error) {
 	// We use 2 kinds of config here.

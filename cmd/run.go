@@ -19,7 +19,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"path/filepath"
 	"strconv"
 
 	rhinojob "github.com/OpenRHINO/RHINO-Operator/api/v1alpha1"
@@ -28,7 +27,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/util/homedir"
 )
 
 type RunOptions struct {
@@ -78,12 +76,11 @@ func (r *RunOptions) run(cmd *cobra.Command, args []string) error {
 	if r.timeToLive < 0 {
 		return fmt.Errorf("the time to live (--ttl) must be greater than or equal to 0")
 	}
-	if r.kubeconfig == "" {
-		if home := homedir.HomeDir(); home != "" {
-			r.kubeconfig = filepath.Join(home, ".kube", "config")
-		} else {
-			return fmt.Errorf("kubeconfig file not found, please use --config to specify the absolute path")
-		}
+
+	var err error
+	r.kubeconfig, err = getKubeconfigPath(r.kubeconfig)
+	if err != nil {
+		return fmt.Errorf("%v, please set the kubeconfig path by --kubeconfig", err)
 	}
 
 	dynamicClient, currentNamespace, err := buildFromKubeconfig(r.kubeconfig)
