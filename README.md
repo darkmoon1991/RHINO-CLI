@@ -36,13 +36,22 @@ rhino [command] --help
 To enable command autocompletion for RHINO-CLI, run the following command for your shell:
 
 - For bash
+
+First, make sure bash-completion is installed. You can install it with `apt-get install bash-completion` or `yum install bash-completion`, etc. Then you now need to ensure that the rhino completion script gets sourced in your shell sessions.
 ```bash
-bash completion.bash [install|uninstall] ##generate rhino autocompletion script and install it, or uninstall it
+echo 'source <(rhino completion bash)' >>~/.bashrc
 ```
 - For zsh
+
+Also you should set up autocompletion, add the following to the beginning of your ~/.zshrc file:
 ```bash
-zsh completion.zsh [install|uninstall] ##generate rhino autocompletion script and install it, or uninstall it
+autoload -Uz compinit && compinit
 ```
+Then add the following to your ~/.zshrc file:
+```bash
+echo "compdef _rhino rhino" | cat - <(rhino completion zsh) | source /dev/stdin
+```
+After reloading your shell, rhino autocompletion should be working.
 ## Demo
 [RHINO-CLI demo](https://user-images.githubusercontent.com/20229719/220574704-eb67afd6-ce2c-408d-b708-b660ccfeabc2.mp4)
 
