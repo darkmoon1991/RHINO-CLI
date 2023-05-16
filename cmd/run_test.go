@@ -56,8 +56,10 @@ func TestRunSingleJob(t *testing.T) {
 	assert.Equal(t, true, strings.Contains(cmdOutput, "Completed"), "rhinojob failed to start")
 
 	fmt.Println("Wait 10s and check job status")
-	// use defer to ensure that these commands are executed even if the test fails
-	defer execShellCmd("sh", []string{"-c", "docker rmi -f $(docker images | grep none | grep second | awk '{print $3}')"})
-	defer execShellCmd("docker", []string{"rmi", testFuncImageName})
-	defer execShellCmd("kubectl", []string{"delete", "namespace", testFuncRunNamespace, "--force", "--grace-period=0"})
+	// delete rhinojob created just now
+	execShellCmd("kubectl", []string{"delete", "namespace", testFuncRunNamespace, "--force", "--grace-period=0"})
+
+	// delete the image built just now
+	execShellCmd("docker", []string{"rmi", testFuncImageName})
+	execShellCmd("sh", []string{"-c", "docker rmi -f $(docker images | grep none | grep second | awk '{print $3}')"})
 }

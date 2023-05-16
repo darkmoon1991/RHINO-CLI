@@ -63,10 +63,11 @@ func TestDeleteSingleJob(t *testing.T) {
 	assert.Equal(t, expetedCmdOutput, actualCmdOutput, "test delete failed:\n"+
 		"expected kubectl output: %s\nactual kubectl output: %s\n",
 		expetedCmdOutput, actualCmdOutput)
-	// delete the image built just now
-	defer execShellCmd("sh", []string{"-c", "docker rmi -f $(docker images | grep none | grep second | awk '{print $3}')"})
-	defer execShellCmd("docker", []string{"rmi", testFuncImageName})
 
 	// delete test namespace and rhinojob created just now
-	defer execShellCmd("kubectl", []string{"delete", "namespace", testFuncRunNamespace, "--force", "--grace-period=0"})
+	execShellCmd("kubectl", []string{"delete", "namespace", testFuncRunNamespace, "--force", "--grace-period=0"})
+
+	// delete the image built just now
+	execShellCmd("docker", []string{"rmi", testFuncImageName})
+	execShellCmd("sh", []string{"-c", "docker rmi -f $(docker images | grep none | grep second | awk '{print $3}')"})
 }
