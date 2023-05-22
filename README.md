@@ -59,7 +59,7 @@ echo "compdef _rhino rhino" | cat - <(rhino completion zsh) | source /dev/stdin
 ```
 
 After reloading your shell, rhino autocompletion should be working.
-If you get an error like 2: `command not found: compdef`, then add the following to the beginning of your ~/.zshrc file:
+If you get an error like : `command not found: compdef`, then add the following to the beginning of your ~/.zshrc file:
 
 ```bash
 autoload -Uz compinit && compinit
