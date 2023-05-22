@@ -35,8 +35,7 @@ func NewDockerRunCommand() *cobra.Command {
 		Example: `  rhino docker-run hello:v1.0
   rhino docker-run foo/matmul:v2.1 --np 4 -- arg1 arg2
   rhino docker-run bar/image:v3.0 -v /path/on/host:/path/in/container --np 8`,
-		RunE:      dockerRunOpts.dockerRun,
-		ValidArgs: []string{"volume", "np"},
+		RunE: dockerRunOpts.dockerRun,
 	}
 
 	dockerRunCmd.Flags().StringVarP(&dockerRunOpts.volume, "volume", "v", "", "Bind mount a volume in the format <host-path>:<container-path>")

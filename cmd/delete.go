@@ -34,12 +34,11 @@ type DeleteOptions struct {
 func NewDeleteCommand() *cobra.Command {
 	deleteOpts := &DeleteOptions{}
 	deleteCmd := &cobra.Command{
-		Use:       "delete",
-		Short:     "Delete a RHINO job by name",
-		Long:      "\nDelete a RHINO job by name",
-		Args:      deleteOpts.argsCheck,
-		RunE:      deleteOpts.runDelete,
-		ValidArgs: []string{"name", "kubeconfig"},
+		Use:   "delete",
+		Short: "Delete a RHINO job by name",
+		Long:  "\nDelete a RHINO job by name",
+		Args:  deleteOpts.argsCheck,
+		RunE:  deleteOpts.runDelete,
 	}
 	deleteCmd.Flags().StringVarP(&deleteOpts.namespace, "namespace", "n", "", "namespace of the RHINO job")
 	deleteCmd.Flags().StringVar(&deleteOpts.kubeconfig, "kubeconfig", "", "path to the kubeconfig file")

@@ -51,8 +51,7 @@ func NewRunCommand() *cobra.Command {
 		Example: `  rhino run hello:v1.0 --namespace user_space
   rhino run foo/matmul:v2.1 --np 4 -- arg1 arg2 
   rhino run mpi/testbench -n 32 -t 800 --server 10.0.0.7 --dir /mnt -- --in=/data/file --out=/data/out`,
-		RunE:      runOpts.run,
-		ValidArgs: []string{"server", "dir", "np", "ttl", "namespace", "kubeconfig"},
+		RunE: runOpts.run,
 	}
 
 	runCmd.Flags().StringVar(&runOpts.dataServer, "server", "", "IP address of an NFS server")

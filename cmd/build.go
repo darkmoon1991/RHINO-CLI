@@ -41,9 +41,8 @@ func NewBuildCommand() *cobra.Command {
 		Long:  "\nBuild MPI function/project into a docker image",
 		Example: `  rhino build --image foo/hello:v1.0
   rhino build -f ./src/config/Makefile -i bar/mpibench:v2.1 -- make -j all arch=Linux`,
-		Args:      buildOpts.validateArgs,
-		RunE:      buildOpts.runBuild,
-		ValidArgs: []string{"image", "file"},
+		Args: buildOpts.validateArgs,
+		RunE: buildOpts.runBuild,
 	}
 
 	buildCmd.Flags().StringVarP(&buildOpts.image, "image", "i", "", "full image form: [registry]/[namespace]/[name]:[tag]")
