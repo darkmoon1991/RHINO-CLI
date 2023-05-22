@@ -55,7 +55,6 @@ func TestRunSingleJob(t *testing.T) {
 	assert.Equal(t, nil, err, "test run failed: %s", errorMessage(err))
 	assert.Equal(t, true, strings.Contains(cmdOutput, "Completed"), "rhinojob failed to start")
 
-	fmt.Println("Wait 10s and check job status")
 	// delete rhinojob created just now
 	execShellCmd("kubectl", []string{"delete", "namespace", testFuncRunNamespace, "--force", "--grace-period=0"})
 
