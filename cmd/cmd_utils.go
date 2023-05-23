@@ -35,7 +35,7 @@ import (
 	"k8s.io/client-go/util/homedir"
 )
 
-var RhinoJobGVR = schema.GroupVersionResource{Group: "openrhino.org", Version: "v1alpha1", Resource: "rhinojobs"}
+var RhinoJobGVR = schema.GroupVersionResource{Group: "openrhino.org", Version: "v1alpha2", Resource: "rhinojobs"}
 
 func getKubeconfigPath(kubeconfig string) (string, error) {
 	if kubeconfig == "" {
