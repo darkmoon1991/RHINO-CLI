@@ -36,6 +36,10 @@ type RunOptions struct {
 	dataServer string
 	funcName   string
 
+	//the fields in v1alpha2 API
+	memoryAllocationMode string
+  	memoryAllocationSize int
+
 	kubeconfig string
 	namespace  string
 }
@@ -57,6 +61,8 @@ func NewRunCommand() *cobra.Command {
 	runCmd.MarkFlagsRequiredTogether("server", "dir")
 	runCmd.Flags().IntVar(&runOpts.parallel, "np", 1, "the number of MPI processes")
 	runCmd.Flags().IntVarP(&runOpts.timeToLive, "ttl", "t", 600, "Time To Live (seconds). The RHINO job will be deleted after this time, whether it is completed or not.")
+	runCmd.Flags().StringVar(&runOpts.memoryAllocationMode, "mem-mode", "FixedPerCoreMemory", "the memory allocation mode of the RHINO job, choose from [FixedTotalMemory, FixedPerCoreMemory]")
+	runCmd.Flags().IntVar(&runOpts.memoryAllocationSize, "mem-size", 2, "the memory allocation size of the RHINO job, in GB")
 	runCmd.Flags().StringVarP(&runOpts.namespace, "namespace", "n", "", "the namespace of the RHINO job")
 	runCmd.Flags().StringVar(&runOpts.kubeconfig, "kubeconfig", "", "the path of the kubeconfig file")
 
@@ -121,6 +127,10 @@ spec:
 	yamlFile += strconv.Itoa(r.timeToLive) + `
   parallelism: `
 	yamlFile += strconv.Itoa(r.parallel) + ` 
+  memoryAllocationMode: `
+  	yamlFile += r.memoryAllocationMode + `
+  memoryAllocationSize: `
+    yamlFile += strconv.Itoa(r.memoryAllocationSize) + `
   appExec: "./mpi-func"`
 	if len(args) > 1 {
 		yamlFile += `
