@@ -81,4 +81,5 @@ func TestBuildSingleFileCpp(t *testing.T) {
 	// remove template folder
 	os.Chdir("..")
 	os.RemoveAll(testFuncName)
+
 }
