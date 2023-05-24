@@ -131,7 +131,7 @@ spec:
   	yamlFile += r.memoryAllocationMode + `
   memoryAllocationSize: `
     yamlFile += strconv.Itoa(r.memoryAllocationSize) + `
-  appExec: "./mpi-func"`
+  appExec: "/app/mpi-func"`
 	if len(args) > 1 {
 		yamlFile += `
   appArgs: [`
