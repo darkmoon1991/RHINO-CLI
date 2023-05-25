@@ -82,6 +82,12 @@ func (r *RunOptions) run(cmd *cobra.Command, args []string) error {
 	if r.timeToLive < 0 {
 		return fmt.Errorf("the time to live (--ttl) must be greater than or equal to 0")
 	}
+	if r.memoryAllocationMode != "FixedTotalMemory" && r.memoryAllocationMode != "FixedPerCoreMemory" {
+		return fmt.Errorf("the memory allocation mode (--mem-mode) must be either FixedTotalMemory or FixedPerCoreMemory")
+	}
+	if r.memoryAllocationSize < 1 {
+		return fmt.Errorf("the memory allocation size (--mem-size) must be greater than or equal to 1")
+	}
 
 	var err error
 	r.kubeconfig, err = getKubeconfigPath(r.kubeconfig)
