@@ -22,7 +22,7 @@ import (
 	"os"
 	"text/tabwriter"
 
-	rhinojob "github.com/OpenRHINO/RHINO-Operator/api/v1alpha1"
+	rhinojob "github.com/OpenRHINO/RHINO-Operator/api/v1alpha2"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
