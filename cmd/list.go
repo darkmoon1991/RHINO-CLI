@@ -22,7 +22,7 @@ import (
 	"os"
 	"text/tabwriter"
 
-	rhinojob "github.com/OpenRHINO/RHINO-Operator/api/v1alpha1"
+	rhinojob "github.com/OpenRHINO/RHINO-Operator/api/v1alpha2"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
@@ -80,10 +80,10 @@ func (l *ListOptions) list(cmd *cobra.Command, args []string) error {
 		fmt.Println("Warning: no RhinoJobs found in the namespace")
 	} else {
 		w := tabwriter.NewWriter(os.Stdout, 2, 0, 2, ' ', 0)
-		fmt.Fprintln(w, "Name\tParallelism\tStatus")
+		fmt.Fprintln(w, "Name\tParallelism\tStatus\tCreation Time")
 
 		for _, rj := range list.Items {
-			fmt.Fprintf(w, "%s\t%d\t%s\n", rj.Name, *rj.Spec.Parallelism, rj.Status.JobStatus)
+			fmt.Fprintf(w, "%s\t%d\t%s\t%v\n", rj.Name, *rj.Spec.Parallelism, rj.Status.JobStatus, rj.CreationTimestamp.Time)
 		}
 
 		// 刷新输出，确保所有内容写入 stdout

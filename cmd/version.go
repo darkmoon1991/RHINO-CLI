@@ -39,7 +39,7 @@ func NewVersionCommand() *cobra.Command {
 	versionOptions := &VersionOptions{}
 	versionCmd := &cobra.Command{
 		Use:   "version",
-		Short: "Print the version of Rhino and kubernetes installed on the local machine,and the version of serverRhino ",
+		Short: "Print the version of RhinoClient, RhinoOperator and the Kubernetes currently used to run RhinoJobs",
 		RunE:  versionOptions.RunVersionCommand,
 	}
 	versionCmd.Flags().StringVar(&versionOptions.kubeconfig, "kubeconfig", "", "the path of the kubeconfig file")
