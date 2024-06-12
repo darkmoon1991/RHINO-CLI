@@ -18,12 +18,9 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/util/homedir"
 )
 
 type DeleteOptions struct {
@@ -52,13 +49,11 @@ func (d *DeleteOptions) argsCheck(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("[name] cannot be empty")
 	}
 	d.rhinojobName = args[0]
-	if len(d.kubeconfig) == 0 {
-		if home := homedir.HomeDir(); home != "" {
-			d.kubeconfig = filepath.Join(home, ".kube", "config")
-		} else {
-			fmt.Println("Error: kubeconfig file not found, please use --config to specify the absolute path")
-			os.Exit(0)
-		}
+
+	var err error
+	d.kubeconfig, err = getKubeconfigPath(d.kubeconfig)
+	if err != nil {
+		return fmt.Errorf("%v, please set the kubeconfig path by --kubeconfig", err)
 	}
 
 	return nil
@@ -75,8 +70,7 @@ func (d *DeleteOptions) runDelete(cmd *cobra.Command, args []string) error {
 
 	err = dynamicClient.Resource(RhinoJobGVR).Namespace(d.namespace).Delete(context.TODO(), d.rhinojobName, metav1.DeleteOptions{})
 	if err != nil {
-		fmt.Println("Error: ", err.Error())
-		os.Exit(0)
+		return err
 	}
 	fmt.Println("RhinoJob " + d.rhinojobName + " deleted")
 	return nil

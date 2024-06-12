@@ -19,17 +19,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strconv"
 
-	rhinojob "github.com/OpenRHINO/RHINO-Operator/api/v1alpha1"
+	rhinojob "github.com/OpenRHINO/RHINO-Operator/api/v1alpha2"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/util/homedir"
 )
 
 type RunOptions struct {
@@ -38,6 +35,10 @@ type RunOptions struct {
 	dataPath   string
 	dataServer string
 	funcName   string
+
+	//the fields in v1alpha2 API
+	memoryAllocationMode string
+  	memoryAllocationSize int
 
 	kubeconfig string
 	namespace  string
@@ -60,6 +61,8 @@ func NewRunCommand() *cobra.Command {
 	runCmd.MarkFlagsRequiredTogether("server", "dir")
 	runCmd.Flags().IntVar(&runOpts.parallel, "np", 1, "the number of MPI processes")
 	runCmd.Flags().IntVarP(&runOpts.timeToLive, "ttl", "t", 600, "Time To Live (seconds). The RHINO job will be deleted after this time, whether it is completed or not.")
+	runCmd.Flags().StringVar(&runOpts.memoryAllocationMode, "mem-mode", "FixedPerCoreMemory", "the memory allocation mode of the RHINO job, choose from [FixedTotalMemory, FixedPerCoreMemory]")
+	runCmd.Flags().IntVar(&runOpts.memoryAllocationSize, "mem-size", 2, "the memory allocation size of the RHINO job, in GB")
 	runCmd.Flags().StringVarP(&runOpts.namespace, "namespace", "n", "", "the namespace of the RHINO job")
 	runCmd.Flags().StringVar(&runOpts.kubeconfig, "kubeconfig", "", "the path of the kubeconfig file")
 
@@ -70,7 +73,7 @@ func (r *RunOptions) run(cmd *cobra.Command, args []string) error {
 	// Check the arguments
 	if len(args) == 0 {
 		cmd.Help()
-		os.Exit(0)
+		return nil
 	}
 	r.funcName = getFuncName(args[0])
 	if r.parallel < 1 {
@@ -79,13 +82,17 @@ func (r *RunOptions) run(cmd *cobra.Command, args []string) error {
 	if r.timeToLive < 0 {
 		return fmt.Errorf("the time to live (--ttl) must be greater than or equal to 0")
 	}
-	if r.kubeconfig == "" {
-		if home := homedir.HomeDir(); home != "" {
-			r.kubeconfig = filepath.Join(home, ".kube", "config")
-		} else {
-			fmt.Println("Error: kubeconfig file not found, please use --config to specify the absolute path")
-			os.Exit(0)
-		}
+	if r.memoryAllocationMode != "FixedTotalMemory" && r.memoryAllocationMode != "FixedPerCoreMemory" {
+		return fmt.Errorf("the memory allocation mode (--mem-mode) must be either FixedTotalMemory or FixedPerCoreMemory")
+	}
+	if r.memoryAllocationSize < 1 {
+		return fmt.Errorf("the memory allocation size (--mem-size) must be greater than or equal to 1")
+	}
+
+	var err error
+	r.kubeconfig, err = getKubeconfigPath(r.kubeconfig)
+	if err != nil {
+		return fmt.Errorf("%v, please set the kubeconfig path by --kubeconfig", err)
 	}
 
 	dynamicClient, currentNamespace, err := buildFromKubeconfig(r.kubeconfig)
@@ -100,25 +107,25 @@ func (r *RunOptions) run(cmd *cobra.Command, args []string) error {
 	_, err = r.runRhinoJob(dynamicClient, args)
 	if err != nil {
 		fmt.Println(err.Error())
-		os.Exit(0)
+		return fmt.Errorf("failed to create a RHINO job")
 	}
 	fmt.Println("RhinoJob", r.funcName, "created")
 	return nil
 }
 
 func (r *RunOptions) printYAML(args []string) (yamlFile string) {
-	yamlFile = `apiVersion: openrhino.org/v1alpha1
+	yamlFile = `apiVersion: openrhino.org/v1alpha2
 kind: RhinoJob
 metadata:
   labels:
     app.kubernetes.io/name: rhinojob 
-    app.kubernetes.io/instance: `
-	yamlFile += r.funcName + `
+    app.kubernetes.io/instance: "`
+	yamlFile += r.funcName + `"
     app.kubernetes.io/part-of: rhino-operator
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: rhino-operator
-  name: `
-	yamlFile += r.funcName + `
+  name: "`
+	yamlFile += r.funcName + `"
 spec:
   image: "`
 	yamlFile += args[0] + `"
@@ -126,7 +133,11 @@ spec:
 	yamlFile += strconv.Itoa(r.timeToLive) + `
   parallelism: `
 	yamlFile += strconv.Itoa(r.parallel) + ` 
-  appExec: "./mpi-func"`
+  memoryAllocationMode: `
+  	yamlFile += r.memoryAllocationMode + `
+  memoryAllocationSize: `
+    yamlFile += strconv.Itoa(r.memoryAllocationSize) + `
+  appExec: "/app/mpi-func"`
 	if len(args) > 1 {
 		yamlFile += `
   appArgs: [`

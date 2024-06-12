@@ -20,13 +20,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
+	"text/tabwriter"
 
-	rhinojob "github.com/OpenRHINO/RHINO-Operator/api/v1alpha1"
+	rhinojob "github.com/OpenRHINO/RHINO-Operator/api/v1alpha2"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/util/homedir"
 )
 
 type ListOptions struct {
@@ -55,18 +54,15 @@ func (l *ListOptions) list(cmd *cobra.Command, args []string) error {
 	// Check the arguments
 	if len(args) != 0 {
 		cmd.Help()
-		os.Exit(0)
+		return nil
 	}
 
 	// Get the kubeconfig file
-	if len(l.kubeconfig) == 0 {
-		if home := homedir.HomeDir(); home != "" {
-			l.kubeconfig = filepath.Join(home, ".kube", "config")
-		} else {
-			fmt.Println("Error: kubeconfig file not found, please use --config to specify the absolute path")
-			os.Exit(0)
-		}
-	}	
+	var err error
+	l.kubeconfig, err = getKubeconfigPath(l.kubeconfig)
+	if err != nil {
+		return fmt.Errorf("%v, please set the kubeconfig path by --kubeconfig", err)
+	}
 
 	// Build the dynamic client
 	dynamicClient, currentNamespace, err := buildFromKubeconfig(l.kubeconfig)
@@ -81,13 +77,21 @@ func (l *ListOptions) list(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if len(list.Items) == 0 {
-		fmt.Println("No RhinoJobs found in the namespace")
-		os.Exit(0)
+		fmt.Println("Warning: no RhinoJobs found in the namespace")
+	} else {
+		w := tabwriter.NewWriter(os.Stdout, 2, 0, 2, ' ', 0)
+		fmt.Fprintln(w, "Name\tParallelism\tStatus\tCreation Time")
+
+		for _, rj := range list.Items {
+			fmt.Fprintf(w, "%s\t%d\t%s\t%v\n", rj.Name, *rj.Spec.Parallelism, rj.Status.JobStatus, rj.CreationTimestamp.Time)
+		}
+
+		// 刷新输出，确保所有内容写入 stdout
+		if err := w.Flush(); err != nil {
+			return err
+		}
 	}
-	fmt.Printf("%-20s\t%-15s\t%-5s\n", "Name", "Parallelism", "Status")
-	for _, rj := range list.Items {
-		fmt.Printf("%-20v\t%-15v\t%-5v\n", rj.Name, *rj.Spec.Parallelism, rj.Status.JobStatus)
-	}
+
 	return nil
 }
 

@@ -17,11 +17,12 @@ package cmd
 
 import (
 	"context"
-	"strings"
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -31,9 +32,28 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 )
 
-var RhinoJobGVR = schema.GroupVersionResource{Group: "openrhino.org", Version: "v1alpha1", Resource: "rhinojobs"}
+var RhinoJobGVR = schema.GroupVersionResource{Group: "openrhino.org", Version: "v1alpha2", Resource: "rhinojobs"}
+
+func getKubeconfigPath(kubeconfig string) (string, error) {
+	if kubeconfig == "" {
+		if home := homedir.HomeDir(); home == "" {
+			return "", fmt.Errorf("home directory not found")
+		} else {
+			kubeconfig = filepath.Join(home, ".kube", "config")
+			// Check if the file exists.
+			if _, err := os.Stat(kubeconfig); os.IsNotExist(err) {
+				return "", fmt.Errorf("kubeconfig file not found in home directory")
+			} else if err != nil {
+				// Some other error occurred when checking if the file exists.
+				return "", fmt.Errorf("error checking kubeconfig file: %v", err)
+			}
+		}
+	}
+	return kubeconfig, nil
+}
 
 func buildFromKubeconfig(configPath string) (dynamicClient *dynamic.DynamicClient, currentNamespace *string, err error) {
 	// We use 2 kinds of config here.
@@ -56,7 +76,7 @@ func buildFromKubeconfig(configPath string) (dynamicClient *dynamic.DynamicClien
 	}
 	context, exist := cmdapiConfig.Contexts[cmdapiConfig.CurrentContext]
 	if exist {
-		if context.Namespace == "" { 
+		if context.Namespace == "" {
 			//If namespace is not defined in kubeconfig, use "default"
 			context.Namespace = "default"
 		}
@@ -73,7 +93,6 @@ func getFuncName(image string) string {
 	funcName := strings.Split(nameTag[len(nameTag)-1], ":")[0]
 	return funcName
 }
-
 
 // DockerHelper is a helper struct for Docker operations
 type DockerHelper struct {
@@ -173,7 +192,7 @@ func (dh *DockerHelper) getContainerLogs(containerID string) error {
 	// Use a demultiplexer to split stdout and stderr, and copy the container logs to the program output
 	_, err = stdcopy.StdCopy(os.Stdout, os.Stderr, logReader)
 	if err != nil && err != io.EOF {
-		return fmt.Errorf("error copying container logs: %v", err)
+		return fmt.Errorf("copying container logs: %v", err)
 	}
 
 	return nil
